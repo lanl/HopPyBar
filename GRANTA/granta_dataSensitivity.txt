@@ -1,0 +1,6 @@
+Data Sensitivity (add options below; one per line)
+NS - Non Sensitive - No CUI (Controlled Unclassified Info) Present
+Official Use Only (OUO)
+OUO - Export Control Info (ECI)
+OUO - Export Control Info/ITAR
+Unclassified Controlled Nuclear Info (UCNI)

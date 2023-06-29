@@ -1,0 +1,63 @@
+Data Sensitivity, NS - Non Sensitive - No CUI (Controlled Unclassified Info) Present  ,
+Data Sensitivity, OUO - Export Control Info (ECI)
+Data Sensitivity, Official Use Only (OUO)
+Data Sensitivity, Unclassified Controlled Nuclear Info (UCNI)
+Data Sensitivity, OUO - Export Control Info/ITAR
+
+
+Data Originator, Firstname Lastname (314159) ,
+Test Lab, LANL ,
+Test Lab, DATAPOINT ,
+Test Lab, KCP ,
+Test Lab, LLNL ,
+Test Lab, PANTEX ,
+Test Lab, SNL ,
+Test Lab, UNIVERSITY OF New Mexico ,
+Test Lab, Y-12 ,
+Test Lab, RFP ,
+Test Lab, ANL ,
+Test Lab, Hanford ,
+Test Lab, BNL ,
+Test Lab, AWE ,
+
+
+Test Group, MST-7 ,
+Test Group, MST-8 ,
+Test Group, MST-16 ,
+Test Group, MPA-CINT ,
+Test Group, M-7 ,
+Test Group, M-9 ,
+Test Group, Q-14 ,
+Test Group, W-14 ,
+Test Group, WX-7 ,
+Test Group, WX-9 ,
+Test Group, E-14 ,
+
+Test Location, 03-1698 ,
+Test Location, 55-0004 ,
+
+Testing Contact, Firstname Lastname (314159) ,
+Operator, Firstname Lastname (314159) ,
+Testing Series ID,  ,
+Specimen Density,  , g/cm^3
+Specimen Location,  ,
+Specimen Orientation, Axial ,
+Specimen Orientation, Circumferential ,
+Specimen Orientation, Longitudinal ,
+Specimen Orientation, Radial ,
+Specimen Orientation, Transverse ,
+Specimen Orientation, Through-thickness (TT) ,
+Specimen Orientation, In-plane along the rolling direction (IP-RD) ,
+Specimen Orientation, In-plane transverse to the rolling direction (IP-TD) ,
+Specimen Orientation, In-plane (IP) ,
+Specimen Orientation, 45° (TT/IP-RD) ,
+Specimen Orientation, 45° (TT/IP-TD) ,
+Specimen Orientation, 45° (IP-RD/IP-TD) ,
+Specimen Orientation, AM build direction ,
+Specimen Orientation, Transverse to AM build direction ,
+Specimen Orientation, Not Applicable ,
+
+Age When Tested,  , yrs
+Test Information Notes, Data Acquisition Interval (s): 0.0000001  ,
+Strain Rate, 3500 , 1/s
+Analysis Notes, Recalc 1/28/2019  -3.7/150/152.6  no shift  Great 1-wave 2-wave synch  3500/s @10% ,

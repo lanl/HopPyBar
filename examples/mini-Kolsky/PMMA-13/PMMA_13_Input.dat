@@ -1,0 +1,67 @@
+Test Date	3/2/18		
+Test Time	4:55:11 PM		
+System ID	mini		
+Test Loading	Compression		
+Sample Description	PMMA #13		
+Initial Sample Diameter (mm)	1.54	mm	
+Initial Sample Length (mm)	1.47	mm	
+Test Temperature (ºC)	20	C	
+Breech Pressure (psi)	50.4	psi	
+Striker Length (mm)	25.4	mm	
+Tip Material	None		
+Sample Lubrication	None		
+Sample Material	PMMA		
+Incident Calibration ID	Al_7075T6_mini_i_20180301		
+Transmitted Calibration ID	Al_7075T6_mini_t_20180301		
+Raw Data File Name	PMMA_13_20180302.raw		
+Incident/Reflected Bar Gain	100		
+Transmitted Bar Gain	100		
+Desired Striker Velocity (m/s)	0	m/s	
+Gap(mm)	0		
+			
+Incident Bar Properties			
+Incident Bar ID	Al_7075T6_mini_i_20180301		
+Incident Bar Description	"Aluminum alloy (7075-T6) bars, 2.1 mm SQUARE"		
+Incident Bar Calibrated Gage Factor	2.1		
+Incident Bar Calibrated Reflected Time (µs)	40.394	us	
+Incident Bar Reflected Time Sound Speed (m/s)	4865.900383	m/s	
+Incident Bar Calibration Date	3/1/18		
+Incident Bar Gage Description	Strain gage values nominal		
+Incident Bar Young's Modulus (GPa)	71.7	GPa	
+Incident Bar Poisson Ratio	0.332713755		
+Incident Bar Rod Sound Speed (m/s)	5051.306803	m/s	c_0=c_s*SQRT(2*(1+poisson))
+Incident Bar Longitudinal Sound Speed (m/s)	5051	m/s	
+Incident Bar Shear Sound Speed (m/s)	3094	m/s	
+Incident Bar Density (g/cm^3)	2.81	g/cm^3	
+Incident Bar Diameter (mm)	2.380880043	mm	
+Incident Bar Strain Gage Location (mm)	102.02	mm	
+Incident Bar Excitation Voltage (V)	10	V	
+Incident Bar Calibrated Gain	100		
+			
+Transmitted Bar Properties			
+Transmitted Bar ID	Al_7075T6_mini_t_20180301		
+Transmitted Bar Description	"Aluminum alloy (7075-T6) bars, 2.1 mm SQUARE"		
+Transmitted Bar Calibrated Gage Factor	2.1		
+Transmitted Bar Calibration Date	3/1/18		
+Transmitted Bar Gage Description	Strain gage values nominal		
+Transmitted Bar Young's Modulus (GPa)	71.7	GPa	
+Transmitted Bar Poisson Ratio	0.332713755		
+Transmitted Bar Rod Sound Speed (m/s)	5051.306803	m/s	
+Transmitted Bar Longitudinal Sound Speed (m/s)	5051	m/s	
+Transmitted Bar Shear Sound Speed (m/s)	3094	m/s	
+Transmitted Bar Density (g/cm^3)	2.81	g/cm^3	
+Transmitted Bar Diameter (mm)	2.380880043	mm	
+Transmitted Bar Strain Gage Location (mm)	101.35	mm	
+Transmitted Bar Excitation Voltage (V)	10	V	
+Transmitted Bar Calibrated Gain	100		
+			
+Square Sample Dimensions			
+d1	1.33		
+d2	1.4		
+d_equiv (goes to B6)	1.54		''=SQRT((4*B59*B60)/PI())
+			
+Square Bar Dimensions			
+d_bar_i	2.11		
+d_bar_t	2.11		
+d_bar_i_equiv (goes to B36)	2.380880043		''=SQRT((4*B64^2)/PI())
+d_bar_t_equiv (goes to B53)	2.380880043		''=SQRT((4*B65^2)/PI())

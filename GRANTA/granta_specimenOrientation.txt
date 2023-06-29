@@ -1,0 +1,22 @@
+Specimen Orientation (add options below; one per line)
+Axial
+Circumferential
+Longitudinal
+Radial
+Transverse
+Through-thickness (TT)
+In-plane along the rolling direction (IP-RD)
+In-plane transverse to the rolling direction (IP-TD)
+In-plane (IP)
+45° (TT/IP-RD)
+45° (TT/IP-TD)
+45° (IP-RD/IP-TD)
+AM build direction
+Transverse to AM build direction
+Not Applicable
+(100)
+(001)
+(101)
+(110)
+(111)
+(210)

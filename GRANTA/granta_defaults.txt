@@ -1,0 +1,16 @@
+Specimen ID, RawFileNameNoExtensionProgramOverwrite
+Data Sensitivity, Official Use Only (OUO) ,
+Data Originator, Name Name (123456) ,
+Test Lab, LANL ,
+Test Group, MST ,
+Test Location, 35-0213 ,
+Testing Contact, Name Name (123456) ,
+Operator, Name Name (123456) ,
+Testing Series ID,  ,
+Specimen Density,  , g/cm^3
+Specimen Location,  ,
+Specimen Orientation, Longitudinal ,
+Age When Tested,  , yrs
+Test Information Notes, Data Acquisition Interval (s): 0.0000001  ,
+Strain Rate, ProgramOverwrite , 1/s
+Analysis Notes, Analysis notes go here but will be overwritten by program ,
