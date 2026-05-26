@@ -10,9 +10,11 @@
 # perform publicly and display publicly, and to permit others to do so.
 
 # For full list of previous versions, see VERSION_HISTORY.md
-version = '20230628'    # First open-source release!!! Added banners and updated licensing info.
-                        # Added dispersion correction method select (including "None"); 
-                        # Organized GRANTA options in separate folder, no more hard-coding dropbox values;
+version = '20260526'    # Updated to PyQt6 for modern installs; tweaked a couple of deprecated changes
+                        # Adding new input styles: REL & PDV
+                        # Fixed deprecation warning for pandas 3.0 re: updating values in granta_in dataframe
+                        # Fixed deprecation warning for timestamp and read_csv verbose-mode
+                        # Fixed some import options in GUIs. No more import *.
                         # Possible BUG: FLAG might have variable timestep, which would screw with things if .raw file were used.
 
 #%%###########################################
@@ -23,7 +25,8 @@ import output_excel
 import data_funcs   # various smoothing functions to be added later
 import os, sys  # for filehandling and whatnot. Removed shutil, csv because we weren't using them anymore
 from glob import glob   # for filehandling again, but differently
-from datetime import datetime  # need to convert unix timestamps to date & time
+#from datetime import datetime  # need to convert unix timestamps to date & time
+import datetime
 import numpy as np
 import pandas as pd # also required openpyxl to be installed for verbose features, imported below if needed
 import matplotlib
@@ -35,16 +38,17 @@ from matplotlib.widgets import SpanSelector, Slider, Button
 #%%##########################################
 #         INPUT CONSTANTS                ####
 #############################################
-# Standard Units:
+### Standard Units: ###
 # Young's Modulus (E): GPa
 # Sound/Wave Speed (c): m/s
 # Density (rho): kg/m^3
 # Lenth/Dimensions: mm
 # Excitation: V
+# Timestep: seconds (note: REL outputs in ms, so this needs to be converted)
 
 # Unit conversion functions available in module: unitconversion.py
 
-now = datetime.now()
+now = datetime.datetime.now()
 date = now.strftime('%Y%m%d')
 cwd = os.getcwd()   # fetch the working directory. Eventually we want to save the dispersion correction calcs for each bar in there.
 
@@ -60,9 +64,11 @@ app.exec()
 
 platforms = {   # variable name (short): Fullname
     'mini':'Mini-Kolsky',
-    'LANL':'LANL HE/Main Bar',
+    'LANL':'LANL Kolsky Systems',
+    'REL':'REL Kolsky Systems',
     'FLAG':'LANL FLAG Output',
-    'APS':'APS/DCS'}
+    'APS':'APS/DCS',
+    'PDV':'Photon Doppler Velocimetry Data'}
 
 #fileid = input_ui.fileid
 fileid, platform, overwrite, dispersion_select, suppress_output, suppress_granta , eng_out, data_dir = import_ui.get_output()
@@ -75,22 +81,27 @@ else:
     dispersion_select = 'None'
     print('WARNING: DISPERSION CORRECTION SET TO NONE! NO CORRECTIONS WILL BE CALCULATED!')
 
-if suppress_output == 0:
-    suppress_output = False
+### NOTE: Changed the output from input_ui when updating from PyQt5 to PyQt6
+if suppress_output == False:
     import openpyxl # need this for verbose mode
-else:
-    suppress_output = True
-
-if suppress_granta == 0:
-    suppress_granta = False
+# if suppress_output == 0:
+#     suppress_output = False
+#     import openpyxl # need this for verbose mode
+# else:
+#     suppress_output = True
+if suppress_granta == False:
     granta_dir = os.path.join('.','GRANTA') + os.sep
-else:
-    suppress_granta = True
 
-if eng_out == 0:
-    eng_out = False
-else:
-    eng_out = True
+# if suppress_granta == 0:
+#     suppress_granta = False
+#     granta_dir = os.path.join('.','GRANTA') + os.sep
+# else:
+#     suppress_granta = True
+
+# if eng_out == 0:
+#     eng_out = False
+# else:
+#     eng_out = True
 
 print(f'Selected Platform = {platforms[platform]}')
 print(f'Dispersion Correction Method = {dispersion_select}')
@@ -126,7 +137,7 @@ elif platform =='LANL':
     except:
         df = pd.read_csv(fileid, delimiter = '\t', encoding = 'cp1252', usecols=[2,3], header = 1, names = ['ch1', 'ch2'])
 
-    timestep = float(df.ch1.iloc[0])
+    timestep = float(df.ch1.iloc[0])    
     df = df.drop(0).reset_index(drop=True)  #BUG: this wasn't overwriting before. Should be fixed now.
     df.loc[:, 'ch1':'ch2'] = df.loc[:, 'ch1':'ch2'] * 1000                  # V to mV conversion, VKE - 05/2020
     # we need a time column created from scratch because we decided we didn't need discrete time for whatever stupid reason.
@@ -140,7 +151,7 @@ elif platform =='LANL':
     #
     # So this is incredibly stupid, but just so we don't have to do anything to the rest of the code,
     # we will duplicate ch2 to ch3 & 4, and set ch2 to be a duplicate of ch1. This all collapses back
-    # when we average the channels together to get ch_i and ch_t. Will fix someday.
+    # when we average the channels together to get ch_i and ch_t. Will #FIX someday.
     df['ch3'] = -1*df['ch2']    # the factor of -1 is so it matches the sign of the minibar data, unless the analysis gets crazy
     df['ch4'] = -1*df['ch2']    # see above
     df['ch2'] = -1*df['ch1']    # see above above
@@ -149,7 +160,40 @@ elif platform =='LANL':
     # The raw file uses Western encoding "cp1252" (Windows 1252) and we want to drop any rows with NaN.
     inputid = fileid
     test_params = pd.read_csv(inputid, delimiter = '\t', encoding = 'cp1252', usecols=[0,1], header=None,
-    skip_blank_lines=False, keep_default_na=False, verbose = True, names=['property', 'data']).dropna()
+        skip_blank_lines=False, keep_default_na=False, names=['property', 'data']).dropna()
+#
+elif platform =='REL':
+    print('WARNING: This input type is still under development!')
+    # # Expecting 1 file (.raw)
+    # try:
+    #     df = pd.read_csv(fileid, delimiter = '\t', usecols=[2,3], header = 1, names = ['ch1', 'ch2'])   # this captures one extra row, which happens to be the timestep, then jettisons that row after reading the value
+    # except:
+    #     df = pd.read_csv(fileid, delimiter = '\t', encoding = 'cp1252', usecols=[2,3], header = 1, names = ['ch1', 'ch2'])
+
+    # timestep = float(df.ch1.iloc[0])
+    # df = df.drop(0).reset_index(drop=True)  #BUG: this wasn't overwriting before. Should be fixed now.
+    # df.loc[:, 'ch1':'ch2'] = df.loc[:, 'ch1':'ch2'] * 1000                  # V to mV conversion, VKE - 05/2020
+    # # we need a time column created from scratch because we decided we didn't need discrete time for whatever stupid reason.
+
+    # time = []
+    # #timestep = 1E-7
+    # for i in range(len(df)):
+    #     time = np.append(time, i*timestep)
+    # #
+    # df['time'] = time * 1e6     # convert to microseconds here.
+    # #
+    # # So this is incredibly stupid, but just so we don't have to do anything to the rest of the code,
+    # # we will duplicate ch2 to ch3 & 4, and set ch2 to be a duplicate of ch1. This all collapses back
+    # # when we average the channels together to get ch_i and ch_t. Will fix someday.
+    # df['ch3'] = -1*df['ch2']    # the factor of -1 is so it matches the sign of the minibar data, unless the analysis gets crazy
+    # df['ch4'] = -1*df['ch2']    # see above
+    # df['ch2'] = -1*df['ch1']    # see above above
+    # df['ch1'] = -1*df['ch1']
+    # # For LANL files we can pull all the necessary parameters automatically and repopulate the variables.
+    # # The raw file uses Western encoding "cp1252" (Windows 1252) and we want to drop any rows with NaN.
+    # inputid = fileid
+    # test_params = pd.read_csv(inputid, delimiter = '\t', encoding = 'cp1252', usecols=[0,1], header=None,
+    # skip_blank_lines=False, keep_default_na=False, verbose = True, names=['property', 'data']).dropna()
 #
 elif platform == 'FLAG':
     #First read test parameters from the "headers" file. This is copy-pasted from above LANL/mini versions, so we should streamline later.
@@ -229,6 +273,23 @@ elif platform == 'APS':
     df['ch4']=df['ch3']     # transmitted should be physically bonded together on ch3, so we'll duplicate and it will collapse again when we average.
     timestep = float((df.time.iloc[1]-df.time.iloc[0]))
 #
+elif platform =='PDV':
+    print('WARNING: This input style is still under development!')
+    files = sorted(glob(os.path.join(file_path, '*Ch*')), key=os.path.basename)        # Couldn't get the file finding popups to work for some reason, some wacky stuff seems to happen with the widgets in Spyder, VKE - 05/2020
+    # # print(files)    # DEBUG ONLY
+    # For standard scope (single channel per file) data. This for loop sets the pathname to account
+    # # for the correct channel number and loops through to grab all channels in the folder.
+    # df = pd.read_csv(files[0], usecols=[3], names = ['time'])               # Reads time data in from first file (ch1) as dataframe (assuming all time data is the same across channels, seems to be valid for present data), VKE - 05/2020
+    # df = df * 1e6                                                           # Convert time from seconds to microseconds, VKE - 05/2020
+    # chs = [pd.read_csv(f, usecols=[4], header = None) for f in files]       # Get channel columns from files and put into df dataframe, VKE - 05/2020
+    # for i in range(0,4):
+    #     print(f'Importing data from Channel {str(i+1)} of 4.')
+    #     df['ch' + str(i+1)] = chs[i]
+    # df.loc[:, 'ch1':'ch4'] = df.loc[:, 'ch1':'ch4'] * 1000                  # V to mV conversion, VKE - 05/2020
+    # del chs  # delete this variable just to spruce things up, since we don't need this anymore
+    # inputid = glob(os.path.join(file_path, '*Input*'))
+    # test_params = pd.read_csv(inputid[0], delimiter = '\t', usecols=[0,1], encoding = 'cp1252', header=None, skip_blank_lines=True, names=['property', 'data']).dropna()    #encoding = 'cp1252'
+    # timestep = float((df.time.iloc[1]-df.time.iloc[0])/1e6)
 else:
     print('Unrecognized test platform. Exiting...')
     sys.exit()
@@ -274,8 +335,8 @@ gcf_i = 2 / gauge_factor_i  # The strain equations have a 2/gauge_factor term, w
 gcf_t = 2 / gauge_factor_t
 igauge2sample = float(test_params.data[36])  # Distance from incident gauge to sample (mm)
 tgauge2sample = float(test_params.data[53])
-filedate = datetime.utcfromtimestamp(os.path.getmtime(fileid)).strftime('%m/%d/%Y')  # gets the Unix timestamp of modification of the data file, and converts to readable string
-filetime = datetime.utcfromtimestamp(os.path.getmtime(fileid)).strftime('%I:%M:%S %p')  # gets the Unix timestamp of mod. of the data file, converts to 12-hour time. %H instead of %I would be 24-hr time.
+filedate = datetime.datetime.fromtimestamp(os.path.getmtime(fileid), datetime.UTC).strftime('%m/%d/%Y')  # gets the Unix timestamp of modification of the data file, and converts to readable string
+filetime = datetime.datetime.fromtimestamp(os.path.getmtime(fileid), datetime.UTC).strftime('%I:%M:%S %p')  # gets the Unix timestamp of mod. of the data file, converts to 12-hour time. %H instead of %I would be 24-hr time.
 sysid = test_params.data[2]  # System ID (HopPyBar for this program, or HE, MB, KB for HE, Main Bar or Kolsky Bar)
 test_loading = test_params.data[3]  # Tension or compression (or something else)
 Sample_Description = test_params.data[4]  # Sample description
@@ -865,7 +926,7 @@ ax_tr = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
 ax_multi = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=axcolor)
 slide_trans = Slider(ax_tt, 'Transmitted Offset', -30.0, 30.0, valinit=ttshift, color='green')  # changed min value from -30 to 0, because shifting time was way easier without resampling
 slide_refl = Slider(ax_tr, 'Reflected Offset', -30.0, 30.0, valinit=trshift, color='blue')
-slide_multi = Slider(ax_multi, 'Transmitted Multiplier', 1, 25, valinit=multishift, color='red')  # multiplier to make it easier to align transmitted wave. Does not get applied to data, only to the plot.
+slide_multi = Slider(ax_multi, 'Transmitted Multiplier', 0.5, 20, valinit=multishift, color='red')  # multiplier to make it easier to align transmitted wave. Does not get applied to data, only to the plot.
 
 #BUG (FIXED): The time shift was previously set to SUBTRACT delta time instead of ADD. I think this was backwards. -BMM 20210330
 # def update(val, deltatt, deltatr):
@@ -1368,17 +1429,17 @@ if suppress_granta == False:
 #
     granta_file = data_dir + file_name[:-4] + '_' + str(avg_rate) +'s_Granta.txt'
     granta_in = pd.read_csv(granta_dir + 'granta_defaults.txt', delimiter = ',', names = ['Field','Value','Units'])  #encoding = 'cp1252',
-    granta_in['Value'].loc[granta_in['Field']=='Specimen ID']= file_name[:-4] + '_' + str(avg_rate) +'s'
-    granta_in['Value'].loc[granta_in['Field']=='Data Sensitivity']= dataSensitivity
-    granta_in['Value'].loc[granta_in['Field']=='Data Originator']= dataOriginator
-    granta_in['Value'].loc[granta_in['Field']=='Test Lab']= testLab
-    granta_in['Value'].loc[granta_in['Field']=='Test Group']= testGroup
-    granta_in['Value'].loc[granta_in['Field']=='Test Location']= testLoc
-    granta_in['Value'].loc[granta_in['Field']=='Testing Contact']= testContact
-    granta_in['Value'].loc[granta_in['Field']=='Operator']= testOperator
-    granta_in['Value'].loc[granta_in['Field']=='Specimen Orientation']= specimenOrient
-    granta_in['Value'].loc[granta_in['Field']=='Strain Rate']= str(avg_rate)
-    granta_in['Value'].loc[granta_in['Field']=='Analysis Notes']= sample_cond
+    granta_in.loc[granta_in['Field']=='Specimen ID', 'Value'] = file_name[:-4] + '_' + str(avg_rate) +'s'
+    granta_in.loc[granta_in['Field']=='Data Sensitivity', 'Value'] = dataSensitivity
+    granta_in.loc[granta_in['Field']=='Data Originator', 'Value'] = dataOriginator
+    granta_in.loc[granta_in['Field']=='Test Lab', 'Value'] = testLab
+    granta_in.loc[granta_in['Field']=='Test Group', 'Value'] = testGroup
+    granta_in.loc[granta_in['Field']=='Test Location', 'Value'] = testLoc
+    granta_in.loc[granta_in['Field']=='Testing Contact', 'Value'] = testContact
+    granta_in.loc[granta_in['Field']=='Operator', 'Value'] = testOperator
+    granta_in.loc[granta_in['Field']=='Specimen Orientation', 'Value'] = specimenOrient
+    granta_in.loc[granta_in['Field']=='Strain Rate', 'Value'] = str(avg_rate)
+    granta_in.loc[granta_in['Field']=='Analysis Notes', 'Value'] = sample_cond
     separator = '*********************************************************' # a bunch of *'s which go between sections in the Granta file
 #
     granta_in.to_csv(granta_file, header = None, index=None, sep=',', encoding = 'cp1252', lineterminator='\r\n')   # seems like this encoding needs to be 1252 to deal with degrees sign (like 45deg IP), otherwise it chokes on import via Granta Toolbox

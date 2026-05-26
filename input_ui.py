@@ -2,14 +2,23 @@
 
 """
 GUI for data file and test platform input for the HopPyBar python program.
-TODO: Eventually replace all tkinter elements with PyQt5, which seems nicer and more stable.
+TODO: Updated from PyQt5 to PyQt6 on Jul 31, 2025; Still considering replacing everything with PySide of something else
 @author: morrow
 Created 2020/09/24
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+try: # Allow for both PyQt6 (default conda channel) and PyQt5 (conda-forge or WinPython)
+    from PyQt6.QtCore import (Qt, QSettings)
+    from PyQt6.QtWidgets import (QApplication, QDialog, QTextEdit, QFileDialog,
+                                QLabel, QHBoxLayout, QPushButton, QGroupBox,
+                                QCheckBox, QComboBox, QVBoxLayout, QGridLayout, QMessageBox,
+                                QRadioButton, QGridLayout)
+except:
+    from PyQt5.QtCore import (Qt, QSettings)
+    from PyQt5.QtWidgets import (QApplication, QDialog, QTextEdit, QFileDialog,
+                                QLabel, QHBoxLayout, QPushButton, QGroupBox,
+                                QCheckBox, QComboBox, QVBoxLayout, QGridLayout, QMessageBox,
+                                QRadioButton, QGridLayout)
 import sys, os
 from datetime import datetime
 
@@ -21,7 +30,12 @@ class ImportData(QDialog):
         super(ImportData, self).__init__(parent)
 #
         self.settings = QSettings('HopPyBar', 'IO_Select')
+        self.setStyleSheet('QWidget {font: "Arial"}')
+        self.initUI()
+        self.loadSettings()
 #
+    def initUI(self):
+        self.setWindowTitle("HopPyBar Data Input")
         self.createTopLeftGroupBox()
         self.createTopCenterGroupBox()
         self.createDispBox()
@@ -46,17 +60,27 @@ class ImportData(QDialog):
         mainLayout.setColumnStretch(1, 1)
         self.setLayout(mainLayout)
 #
-        self.setWindowTitle("HopPyBar Data Input")
+    def loadSettings(self):
+        try:
+            self.dispersion_select.setCurrentIndex(self.settings.value('default_dispersion_select'))
+        except:
+            pass
+        try:
+            self.suppress_output_check.setChecked(self.settings.value('default_suppress_output', type=bool))
+            self.suppress_granta_check.setChecked(self.settings.value('default_suppress_granta', type=bool))
+            self.eng_out_check.setChecked(self.settings.value('default_eng_out', type=bool))
+        except:
+            self.suppress_output_check.setChecked(False)
+            self.suppress_granta_check.setChecked(False)
+            self.eng_out_check.setChecked(False)   
 #
     def openFileNameDialog(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         self.fileid, _ = QFileDialog.getOpenFileName(self,
                             "Select Input File",
 #                            "",
                             self.settings.value('recent_dir'),
                             "All Files (*);;Raw Files (*.raw);;Text Files (*.txt);;CSV Files (*.csv)",
-                            options=options)
+                            options=QFileDialog.Option.DontUseNativeDialog)
         #self.filename.setText(fileid)
         if self.fileid:
             self.filename.setText(self.fileid)
@@ -97,8 +121,16 @@ class ImportData(QDialog):
         vbox = QVBoxLayout()
         self.topCenterGroupBox.setLayout(vbox)
 #
-        radiobutton = QRadioButton("LANL HE/Main Bar")
+        radiobutton = QRadioButton("LANL Kolsky Systems")
         radiobutton.platform = "LANL"
+        if self.settings.value('default_platform') == radiobutton.platform:
+            radiobutton.setChecked(True)
+            self.platform = radiobutton.platform
+        radiobutton.toggled.connect(self.onClicked)
+        vbox.addWidget(radiobutton)
+#
+        radiobutton = QRadioButton("REL Kolsky Systems")
+        radiobutton.platform = "REL"
         if self.settings.value('default_platform') == radiobutton.platform:
             radiobutton.setChecked(True)
             self.platform = radiobutton.platform
@@ -130,6 +162,14 @@ class ImportData(QDialog):
         radiobutton.toggled.connect(self.onClicked)
         vbox.addWidget(radiobutton)
 #
+        radiobutton = QRadioButton("PDV Data")
+        radiobutton.platform = "PDV"
+        if self.settings.value('default_platform') == radiobutton.platform:
+            radiobutton.setChecked(True)
+            self.platform = radiobutton.platform
+        radiobutton.toggled.connect(self.onClicked)
+        vbox.addWidget(radiobutton)
+#
     def onClicked(self):
         radioButton = self.sender()
         if radioButton.isChecked():
@@ -148,10 +188,6 @@ class ImportData(QDialog):
         dbox.addWidget(text_ds, 1, 0)
         dbox.addWidget(self.dispersion_select, 1, 1)
         #
-        try:
-            self.dispersion_select.setCurrentIndex(self.settings.value('default_dispersion_select'))
-        except:
-            pass                
 #    
     def createOutOptionsGroupBox(self):
         self.outOptionsGroupBox = QGroupBox("Output Options")
@@ -160,36 +196,31 @@ class ImportData(QDialog):
         vbox = QGridLayout()
         self.outOptionsGroupBox.setLayout(vbox)
 #
-        suppress_output_check = QCheckBox("Suppress verbose output (many files/plots)")
-        suppress_output_check.setCheckState(0)   # set default to unchecked
-        suppress_output_check.stateChanged.connect(self.onChecked)
-        vbox.addWidget(suppress_output_check, 2, 0)   #layout.addWidget(radiobutton, 0, 0)
+        self.suppress_output_check = QCheckBox("Suppress verbose output (many files/plots)")
+        self.suppress_output_check.setCheckState(Qt.CheckState.Unchecked)   # set default to unchecked
+        self.suppress_output_check.stateChanged.connect(self.onChecked)
+        vbox.addWidget(self.suppress_output_check, 2, 0)   #layout.addWidget(radiobutton, 0, 0)
 #
-        suppress_granta_check = QCheckBox("Suppress GRANTA Output")
-        suppress_granta_check.setCheckState(0)   # set default to unchecked
-        suppress_granta_check.stateChanged.connect(self.onChecked2)
-        vbox.addWidget(suppress_granta_check, 3, 0)   #layout.addWidget(radiobutton, 0, 0)
+        self.suppress_granta_check = QCheckBox("Suppress GRANTA Output")
+        self.suppress_granta_check.setCheckState(Qt.CheckState.Unchecked)   # set default to unchecked
+        self.suppress_granta_check.stateChanged.connect(self.onChecked2)
+        vbox.addWidget(self.suppress_granta_check, 3, 0)   #layout.addWidget(radiobutton, 0, 0)
 #
-        eng_out_check = QCheckBox("Output Engineering Values Instead of True")
-        eng_out_check.setCheckState(0)   # set default to unchecked
-        eng_out_check.stateChanged.connect(self.onChecked3)
-        vbox.addWidget(eng_out_check, 4, 0)   #layout.addWidget(radiobutton, 0, 0)
+        self.eng_out_check = QCheckBox("Output Engineering Values Instead of True")
+        self.eng_out_check.setCheckState(Qt.CheckState.Unchecked)   # set default to unchecked
+        self.eng_out_check.stateChanged.connect(self.onChecked3)
+        vbox.addWidget(self.eng_out_check, 4, 0)   #layout.addWidget(radiobutton, 0, 0)
 #
-        try:
-            suppress_output_check.setCheckState(self.settings.value('default_suppress_output'))
-            suppress_granta_check.setCheckState(self.settings.value('default_suppress_granta'))
-            eng_out_check.setCheckState(self.settings.value('default_eng_out'))
-        except:
-            pass
-        if suppress_output_check.isChecked() == True:
+
+        if self.suppress_output_check.isChecked() == True:
             self.suppress_output = 2
         else:
             self.suppress_output = 0
-        if suppress_granta_check.isChecked() == True:
+        if self.suppress_granta_check.isChecked() == True:
             self.suppress_granta = 2
         else:
             self.suppress_granta = 0
-        if eng_out_check.isChecked() == True:
+        if self.eng_out_check.isChecked() == True:
             self.eng_out = 2
         else:
             self.eng_out = 0
@@ -249,9 +280,9 @@ class ImportData(QDialog):
         else:
             self.settings.setValue('default_platform', self.platform)
             self.settings.setValue('default_dispersion_select', self.dispersion_select.currentIndex())
-            self.settings.setValue('default_suppress_output', self.suppress_output)
-            self.settings.setValue('default_suppress_granta', self.suppress_granta)
-            self.settings.setValue('default_eng_out', self.eng_out)
+            self.settings.setValue('default_suppress_output', self.suppress_output_check.isChecked())
+            self.settings.setValue('default_suppress_granta', self.suppress_granta_check.isChecked())
+            self.settings.setValue('default_eng_out', self.eng_out_check.isChecked())
             self.settings.setValue('recent_dir', self.data_dir)
             print('Input selection complete. Default settings saved to: {}'.format(self.settings.fileName()))
             super(ImportData, self).accept()
@@ -279,8 +310,11 @@ class ImportData(QDialog):
         self.OKCancel.setLayout(layout)
 #
     def get_output(self):
-            return (self.fileid, self.platform, self.overwrite, self.dispersion_select, self.suppress_output,
-                self.suppress_granta, self.eng_out, self.data_dir)
+            print(f'verbose: {self.suppress_output_check.isChecked()}')
+            print(f'granta: {self.suppress_granta_check.isChecked()}')
+            print(f'eng: {self.eng_out_check.isChecked()}')
+            return (self.fileid, self.platform, self.overwrite, self.dispersion_select, self.suppress_output_check.isChecked(),
+                self.suppress_granta_check.isChecked(), self.eng_out_check.isChecked(), self.data_dir)
 #
 if __name__ == '__main__':
     import os, sys
