@@ -30,4 +30,11 @@
 | HopPyBar_20211220 | <ul><li>Fixed some more bugs with redux of GUIs (to remove globals). Should be okay now. </li><li> Possible BUG: FLAG might have variable timestep, which would screw with things if .raw file were used. </li><li> Started moving to functions for major components (like plotting, 1-wave and 2-wave analysis) to clean the code further.</li></ul>|
 | HopPyBar_20221005 | Minor bug fixes with pandas (drop(0) & deprecation warning for append) |
 | HopPyBar_20221213 | Minor fixes to clear some deprecation warnings in index handling and ExcelWriter | 
-| HpoPyBar_20230628 | <ul><li>First open-source release!!! Added banners and updated licensing info.</li><li> Added dispersion correction method select (including "None"). </li><li> Organized GRANTA options in separate folder, no more hard-coding dropbox values.</li></ul>
+| HopPyBar_20230628 | <ul><li>First open-source release!!! Added banners and updated licensing info.</li><li> Added dispersion correction method select (including "None"). </li><li> Organized GRANTA options in separate folder, no more hard-coding dropbox values.</li></ul> |
+| HopPyBar_20231122 | <ul><li> Confirmed works with Python 3.12 </li></ul> |
+| HopPyBar_20250526 | <ul><li> Confirmed works with Python 3.14 </li> 
+                        <li> Updated to PyQt6 for modern installs; tweaked a couple of deprecated changes
+                        <li> Adding new input styles: REL & PDV </li>
+                        <li> Fixed deprecation warning for pandas 3.0 re: updating values in granta_in dataframe </li>
+                        <li> Fixed deprecation warning for timestamp and read_csv verbose-mode </li>
+                        <li> Fixed some import options in GUIs. No more import *.</li></ul> |
